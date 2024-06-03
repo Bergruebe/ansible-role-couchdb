@@ -6,7 +6,7 @@ couchdb_enabled: true
 couchdb_identifier: couchdb
 couchdb_hostname: ""
 
-couchdb_version: "3.2"
+couchdb_version: "3.3.3"
 # In mb, default is 1gb
 couchdb_tmp_size: 1000
 
@@ -52,6 +52,7 @@ couchdb_config_single_node: true
 #   SOMETHING=true
 couchdb_environment_variables_extension: ''
 couchdb_config_extension: ''
+couchdb_container_labels_additional_labels: ''
 
 couchdb_container_network: '{{ couchdb_identifier }}'
 
