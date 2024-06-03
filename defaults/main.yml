@@ -1,0 +1,132 @@
+---
+
+# Project source code URL: https://github.com/apache/couchdb
+
+couchdb_enabled: true
+couchdb_identifier: couchdb
+couchdb_hostname: ""
+
+couchdb_version: "3.2"
+# In mb, default is 1gb
+couchdb_tmp_size: 1000
+
+couchdb_uid: '5984'
+couchdb_gid: '5984'
+
+couchdb_base_path: "/{{ couchdb_identifier }}"
+
+# A list of additional "mounts" to be mounted in the container.
+# Contains definition objects like this:
+# couchdb_container_additional_mounts:
+# - "type=bind|volume|tmpfs,source=/outside,target=/inside,readonly,bind-propagation=slave"
+couchdb_container_additional_mounts: []
+
+couchdb_config_path: "{{ couchdb_base_path }}/config"
+couchdb_data_path: "{{ couchdb_base_path }}/data"
+
+
+couchdb_admin_user: 'mash-admin'
+couchdb_admin_passwd: ''
+couchdb_admins_auto:
+    - user: "{{ couchdb_admin_user }}"
+      password: "{{ couchdb_admin_passwd }}"
+
+# Define admin users
+# example:
+# - user: admin
+#   password: "P@ssw0rd"
+couchdb_admins_custom: []
+couchdb_admins: "{{ couchdb_admins_auto + couchdb_admins_custom }}"
+
+couchdb_config_couch_chttpd_auth_secret: ''
+couchdb_config_uuid: ''
+
+
+# enable couchdb single node mode, to automatically create system databases
+couchdb_config_single_node: true
+
+# Additional environment variables to pass to the couchdb container.
+#
+# Example:
+# couchdb_environment_variables_extension: |
+#   SOMETHING=true
+couchdb_environment_variables_extension: ''
+couchdb_config_extension: ''
+
+couchdb_container_network: '{{ couchdb_identifier }}'
+
+# See options: https://docs.couchdb.org/en/stable/config/logging.html#log/level
+couchdb_config_loglevel: error
+
+couchdb_config_peruser_enabled: true
+couchdb_config_require_valid_user_except_for_up: true
+
+# Define tables
+# couchdb_tables_custom:
+# - name: table1
+#   permission:
+#     admins:
+#       names: []
+#       roles: []
+#     members:
+#       names:
+#         - user1
+#       roles: []
+couchdb_tables_custom: []
+couchdb_tables_default:
+    - name: "_users"
+    - name: "_replicator"
+    - name: "_global_changes"
+
+couchdb_tables_auto: []
+
+couchdb_tables: "{{ couchdb_tables_default + couchdb_tables_auto + couchdb_tables_custom }}"
+
+# Define users
+# couchdb_users_custom:
+# - name: user1
+#   password: password1
+#   roles: []
+#   type: user
+couchdb_users_auto: []
+couchdb_users_custom: []
+couchdb_users: "{{ couchdb_users_auto + couchdb_users_custom }}"
+
+# Define default database permissions, if not defined in `couchdb_tables_custom`
+couchdb_default_permissions:
+    admins:
+        names: []
+        roles: []
+    members:
+        names: []
+        roles: []
+
+couchdb_container_image: "{{ couchdb_container_image_registry_prefix }}couchdb:{{ couchdb_container_image_tag }}"
+couchdb_container_image_registry_prefix: "docker.io/"
+couchdb_container_image_tag: "{{ couchdb_version }}"
+couchdb_container_image_force_pull: "{{ couchdb_container_image.endswith(':latest') }}"
+
+############
+## SERVER ##
+############
+
+# List of systemd services that couchdb-api.service depends on
+couchdb_systemd_required_services_list: "{{ couchdb_systemd_required_services_list_default + couchdb_systemd_required_services_list_auto + couchdb_systemd_required_services_list_custom }}"
+couchdb_systemd_required_services_list_default: ['docker.service']
+couchdb_systemd_required_services_list_auto: []
+couchdb_systemd_required_services_list_custom: []
+
+
+couchdb_container_http_port: 5984
+
+# Controls whether the couchdb container exposes its HTTP port (as defined by `couchdb_container_http_port`).
+#
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:8731"), or empty string to not expose.
+couchdb_container_http_host_bind_port: ""
+
+# A list of additional container networks that the container would be connected to.
+# The role does not create these networks, so make sure they already exist.
+# Use this to expose this container to another reverse proxy, which runs in a different container network.
+couchdb_container_additional_networks: "{{ couchdb_container_additional_networks_auto + couchdb_container_additional_networks_custom }}"
+couchdb_container_additional_networks_auto: []
+couchdb_container_additional_networks_custom: []

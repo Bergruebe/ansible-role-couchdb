@@ -1,0 +1,50 @@
+[Unit]
+Description=couchdb Server ({{ couchdb_identifier }})
+{% for service in couchdb_systemd_required_services_list %}
+Requires={{ service }}
+After={{ service }}
+{% endfor %}
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ couchdb_identifier }} 2>/dev/null || true'
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ couchdb_identifier }} 2>/dev/null || true'
+
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
+			--rm \
+			--name={{ couchdb_identifier }} \
+			--log-driver=none \
+			--read-only \
+			--user={{ couchdb_uid }}:{{ couchdb_gid }} \
+			--hostname={{ couchdb_identifier }} \
+			--cap-drop=all \
+			--network={{ couchdb_container_network }} \
+			{% if couchdb_container_http_host_bind_port %}
+			-p {{ couchdb_container_http_host_bind_port }}:{{ couchdb_container_http_port }} \
+			{% endif %}
+			--env-file={{ couchdb_base_path }}/env \
+			--label-file={{ couchdb_base_path }}/labels \
+			--mount type=bind,src={{ couchdb_config_path }},dst="/opt/couchdb/etc/local.d" \
+			--mount type=bind,src={{ couchdb_data_path }},dst=/opt/couchdb/data \
+			{% for mount in couchdb_container_additional_mounts %}
+			--mount {{ mount }} \
+			{% endfor %}
+			--tmpfs=/tmp:rw,noexec,nosuid,size={{ couchdb_tmp_size }}m \
+			{{ couchdb_container_image }}
+
+{% for network in couchdb_container_additional_networks %}
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ couchdb_identifier }}
+{% endfor %}
+
+ExecStart={{ devture_systemd_docker_base_host_command_docker }} start --attach "{{ couchdb_identifier }}"
+
+
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ couchdb_identifier }} 2>/dev/null || true'
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ couchdb_identifier }} 2>/dev/null || true'
+Restart=always
+RestartSec=30
+SyslogIdentifier={{ couchdb_identifier }}
+
+[Install]
+WantedBy=multi-user.target

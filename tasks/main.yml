@@ -1,0 +1,32 @@
+---
+
+- block:
+    - when: couchdb_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/util/validate_config.yml"
+  tags:
+    - setup-all
+    - setup-couchdb
+    - install-all
+    - install-couchdb
+
+- block:
+    - when: couchdb_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+  tags:
+    - setup-all
+    - setup-couchdb
+    - install-all
+    - install-couchdb
+
+- block:
+    - when: couchdb_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/util/create_user.yml"
+  tags:
+    - couchdb-add-user
+
+- block:
+    - when: not couchdb_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
+  tags:
+    - setup-all
+    - setup-couchdb

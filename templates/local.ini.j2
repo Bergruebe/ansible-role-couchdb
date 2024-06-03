@@ -1,0 +1,29 @@
+; CouchDB Configuration Settings
+
+; Custom settings should be made in this file. They will override settings
+; in default.ini, but unlike changes made to default.ini, this file won't be
+; overwritten on server upgrade.
+[couchdb]
+single_node = {{ couchdb_config_single_node }}
+uuid = {{ couchdb_config_uuid }}
+
+[couch_peruser]
+enable = {{ couchdb_config_peruser_enabled }}
+delete_dbs = true
+
+[chttpd]
+bind_address = 0.0.0.0
+require_valid_user_except_for_up = {{ couchdb_config_require_valid_user_except_for_up }}
+
+[log]
+level = {{ couchdb_config_loglevel }}
+
+[admins]
+{% for admin in couchdb_admins %}
+{{ admin.user }} = {{ admin.password }}
+{% endfor %}
+
+[chttpd_auth]
+secret = {{ couchdb_config_couch_chttpd_auth_secret }}
+
+{{ couchdb_config_extension }}
