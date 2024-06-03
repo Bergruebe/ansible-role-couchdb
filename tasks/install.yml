@@ -1,10 +1,5 @@
 ---
 
-- debug:
-    msg: >
-      {{ devture_systemd_docker_base_host_command_docker }} exec {{ couchdb_identifier }} curl -X PUT http://{{ couchdb_admin_user }}:{{ couchdb_admin_passwd }}@localhost:5984/{{ item.name }}/_security -H "Accept: application/json" -H "Content-Type: application/json" -d '{{ item.permission | default(couchdb_default_permissions) | to_json }}'
-  loop: "{{ (couchdb_tables_custom | union(couchdb_tables_auto)) }}"
-
 - name: Ensure couchdb network is created in Docker
   community.docker.docker_network:
     name: "{{ couchdb_container_network }}"
@@ -70,16 +65,15 @@
         cmd: "{{ devture_systemd_docker_base_host_command_docker }} exec {{ couchdb_identifier }} curl -X PUT http://{{ couchdb_admin_user }}:{{ couchdb_admin_passwd }}@localhost:5984/{{ item.name }}"
       register: couchdb_tables_output
       changed_when: couchdb_tables_output.stdout.find('{"ok":true}') != -1
-      failed_when: couchdb_tables_output.stdout.find('{"ok":false}') != -1
+      failed_when: couchdb_tables_output.stdout.find('{"ok":true}') == -1 and couchdb_tables_output.stdout.find('"file_exists"') == -1
       loop: "{{ couchdb_tables }}"
 
 
-    - name: Create couchdb user | cause error if user already exists
+    - name: Create couchdb users
       ansible.builtin.command:
-        cmd: "{{ devture_systemd_docker_base_host_command_docker }} exec {{ couchdb_identifier }} curl -X PUT http://{{ couchdb_admin_user }}:{{ couchdb_admin_passwd }}@localhost:5984/_users/org.couchdb.user:{{ item.name }} -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{{ item | to_json }}' || echo User already exists"
+        cmd: "{{ devture_systemd_docker_base_host_command_docker }} exec {{ couchdb_identifier }} curl -X PUT http://{{ couchdb_admin_user }}:{{ couchdb_admin_passwd }}@localhost:5984/_users/org.couchdb.user:{{ item.name }} -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{{ item | to_json }}'"
       register: couchdb_users_output
       changed_when: couchdb_users_output.stdout.find('{"ok":true}') != -1
-      failed_when: couchdb_users_output.stdout.find('{"error"') != -1
       no_log: true # do not log the password
       ignore_errors: true # Ignore errors if user already exists
       loop: "{{ couchdb_users }}"
