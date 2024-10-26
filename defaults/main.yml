@@ -6,7 +6,7 @@ couchdb_enabled: true
 couchdb_identifier: couchdb
 couchdb_hostname: ""
 
-couchdb_version: "3.3.3"
+couchdb_version: "3.4.2"
 # In mb, default is 1gb
 couchdb_tmp_size: 1000
 
