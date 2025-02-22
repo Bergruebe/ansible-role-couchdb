@@ -113,7 +113,7 @@ couchdb_container_image_force_pull: "{{ couchdb_container_image.endswith(':lates
 
 # List of systemd services that couchdb-api.service depends on
 couchdb_systemd_required_services_list: "{{ couchdb_systemd_required_services_list_default + couchdb_systemd_required_services_list_auto + couchdb_systemd_required_services_list_custom }}"
-couchdb_systemd_required_services_list_default: ['docker.service']
+couchdb_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
 couchdb_systemd_required_services_list_auto: []
 couchdb_systemd_required_services_list_custom: []
 
