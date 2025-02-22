@@ -2,8 +2,10 @@
 
 - name: Ensure couchdb network is created in Docker
   community.docker.docker_network:
+    enable_ipv6: "{{ devture_systemd_docker_base_ipv6_enabled }}"
     name: "{{ couchdb_container_network }}"
     driver: bridge
+    driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
 
 
 - name: Ensure couchdb paths exists
